@@ -8,7 +8,7 @@ import Foundation
 
 class CalculCalculation {
 
-    let testLimit: Int = 1_000_000_000  // Upper limit for prime checking
+    let testLimit: Int = 2_000_000_000  // Upper limit for prime checking
     let threadCount = ProcessInfo.processInfo.activeProcessorCount
 
     // MARK: - Prime number check
