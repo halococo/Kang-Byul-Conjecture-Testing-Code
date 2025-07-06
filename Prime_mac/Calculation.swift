@@ -8,7 +8,7 @@ import Foundation
 
 class CalculCalculation {
 
-    let testLimit: Int = 300_000_000  // Upper limit for prime number verification
+    let testLimit: Int = 2_000_000_000  // Upper limit for prime number verification
     let threadCount = ProcessInfo.processInfo.activeProcessorCount
 
     // MARK: - 1. Primality Test Function
