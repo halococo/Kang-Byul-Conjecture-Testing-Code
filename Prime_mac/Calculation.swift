@@ -8,10 +8,10 @@ import Foundation
 
 class CalculCalculation {
 
-    let testLimit: Int = 2_000_000_000  // Upper limit for prime checking
+    let testLimit: Int = 300_000_000  // Upper limit for prime number verification
     let threadCount = ProcessInfo.processInfo.activeProcessorCount
 
-    // MARK: - Prime number check
+    // MARK: - 1. Primality Test Function (Unchanged)
     func isPrime(_ n: Int) -> Bool {
         if n <= 1 { return false }
         if n <= 3 { return true }
@@ -24,7 +24,7 @@ class CalculCalculation {
         return true
     }
 
-    // MARK: - The sum of the digits in base-7
+    // MARK: - 2. Base-7 Digit Sum Function (Unchanged)
     func sumOfBase7Digits(_ n: Int) -> Int {
         var num = n
         var sum = 0
@@ -35,44 +35,75 @@ class CalculCalculation {
         return sum
     }
 
-    // MARK: - Check if the number is a product of primes
-    func isProductOfPrimes(_ n: Int) -> Bool {
-        if n < 2 { return false }
+    // MARK: Checks if the input number is a semiprime (a product of two primes).
+    func isSemiprime(_ n: Int) -> Bool {
+        // The smallest semiprime is 4 (2*2).
+        if n < 4 { return false }
+
         var num = n
-        for i in 2...Int(sqrt(Double(n))) {
-            if isPrime(i) {
-                while num % i == 0 {
-                    num /= i
-                }
-            }
-            if num == 1 { return true }
+        var primeFactorCount = 0
+
+        // Count prime factors by dividing by 2.
+        while num % 2 == 0 {
+            primeFactorCount += 1
+            // Optimization: exit immediately if factor count exceeds 2.
+            if primeFactorCount > 2 { return false }
+            num /= 2
         }
-        return isPrime(num)
+
+        // Count prime factors by dividing by odd numbers starting from 3.
+        var i = 3
+        while i * i <= num {
+            while num % i == 0 {
+                primeFactorCount += 1
+                // Optimization
+                if primeFactorCount > 2 { return false }
+                num /= i
+            }
+            i += 2
+        }
+        
+        // If num > 1 after the loop, the remaining number is a large prime factor itself.
+        if num > 1 {
+            primeFactorCount += 1
+        }
+
+        // Returns true only if the count of prime factors is exactly 2.
+        return primeFactorCount == 2
     }
 
-    // MARK: - Execute parallel processing
-    func runKangByulConjecture(limit: Int, threads: Int) {
+    // MARK: - 4. Parallel Execution Function (Logic Modified)
+    func runSemiprimeConjectureTest(limit: Int, threads: Int) {
         let group = DispatchGroup()
-        let queue = DispatchQueue(label: "kangbyul.concurrent.queue", attributes: .concurrent)
+        let queue = DispatchQueue(label: "kangbyul.semiprime.queue", attributes: .concurrent)
         let step = limit / threads
-        var violations = [(Int, Int)]()
+        var violations = [(prime: Int, sum: Int)]()
         let lock = NSLock()
 
-        print("🚀 Starting Kang Byul Conjecture Test up to \(limit) using \(threads) threads...")
+        print("🚀 Starting Semiprime Conjecture Test up to \(limit) using \(threads) threads...")
         let startTime = Date()
 
         for i in 0..<threads {
-            let start = i * step + (i == 0 ? 2 : 0)
-            let end = (i == threads - 1) ? limit : (i + 1) * step - 1
+            // Adjust to start from 2.
+            let start = i * step + (i == 0 ? 2 : 1)
+            let end = (i == threads - 1) ? limit : start + step - 1
 
             queue.async(group: group) {
                 for p in start...end {
                     if self.isPrime(p) {
-                        let s = self.sumOfBase7Digits(p)
-                        if s != 1 && !self.isPrime(s) && !self.isProductOfPrimes(s) {
+                        let s7 = self.sumOfBase7Digits(p)
+                        
+                        // Condition to check for violations of the new conjecture.
+                        // Finds cases where s7 is NOT 1, NOT a prime, and NOT a semiprime.
+                        if s7 != 1 && !self.isPrime(s7) && !self.isSemiprime(s7) {
                             lock.lock()
-                            violations.append((p, s))
-                            print("Violation: Prime = \(p), Base-7 = \(String(p, radix: 7)), Digit Sum = \(s)")
+                            violations.append((prime: p, sum: s7))
+                            print("--------------------------------------------------")
+                            print("❗️❗️❗️ VIOLATION FOUND ❗️❗️❗️")
+                            print("Prime (p)      : \(p)")
+                            print("Digit Sum (S₇) : \(s7)")
+                            print(" -> S₇=\(s7) is NOT 1, NOT prime, and NOT a semiprime.")
+                            print("--------------------------------------------------")
                             lock.unlock()
                         }
                     }
@@ -82,18 +113,19 @@ class CalculCalculation {
 
         group.notify(queue: .main) {
             let duration = Date().timeIntervalSince(startTime)
-            print("🏁 Kang Byul Conjecture Test complete in \(String(format: "%.2f", duration)) seconds.")
+            print("🏁 Test complete in \(String(format: "%.2f", duration)) seconds.")
             if violations.isEmpty {
-                print("No violations found. The conjecture holds up to \(limit).")
+                print("✅ No violations found. The Semiprime Conjecture holds up to \(limit).")
             } else {
-                print("\(violations.count) violation(s) found.")
+                print("❌ Found \(violations.count) violation(s).")
             }
         }
     }
 
-    // MARK: - Method to start execution
+    // MARK: - 5. Execution Entry Point
     func start() {
-        runKangByulConjecture(limit: testLimit, threads: threadCount)
-        RunLoop.main.run()  // Keep the main thread alive
+        runSemiprimeConjectureTest(limit: testLimit, threads: threadCount)
+        // Keep the main thread alive to allow async tasks to complete.
+        RunLoop.main.run()
     }
 }
