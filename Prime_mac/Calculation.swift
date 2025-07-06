@@ -11,7 +11,7 @@ class CalculCalculation {
     let testLimit: Int = 300_000_000  // Upper limit for prime number verification
     let threadCount = ProcessInfo.processInfo.activeProcessorCount
 
-    // MARK: - 1. Primality Test Function (Unchanged)
+    // MARK: - 1. Primality Test Function
     func isPrime(_ n: Int) -> Bool {
         if n <= 1 { return false }
         if n <= 3 { return true }
@@ -24,7 +24,7 @@ class CalculCalculation {
         return true
     }
 
-    // MARK: - 2. Base-7 Digit Sum Function (Unchanged)
+    // MARK: - 2. Base-7 Digit Sum Function
     func sumOfBase7Digits(_ n: Int) -> Int {
         var num = n
         var sum = 0
@@ -72,7 +72,7 @@ class CalculCalculation {
         return primeFactorCount == 2
     }
 
-    // MARK: - 4. Parallel Execution Function (Logic Modified)
+    // MARK: - 4. Parallel Execution Function
     func runSemiprimeConjectureTest(limit: Int, threads: Int) {
         let group = DispatchGroup()
         let queue = DispatchQueue(label: "kangbyul.semiprime.queue", attributes: .concurrent)
