@@ -15,8 +15,18 @@ struct ContentView: View {
             .padding()
             .onAppear {
                 DispatchQueue.global().async {
-                    let calc = CalculCalculation()
-                    calc.start()
+                    //verification of the conjecture in base 7
+                    //let calc = CalculCalculation()
+                    //calc.start()
+                    
+                    //verification in other bases
+                    //let tester = GeneralConjectureTester()
+                    //tester.start()
+                    
+                    // verification for a specific base
+                    let tester = SpecialBaseTester()
+                    tester.start()
+
                 }
             }
     }
